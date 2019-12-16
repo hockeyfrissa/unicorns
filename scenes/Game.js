@@ -26,6 +26,7 @@ class SceneGame extends Phaser.Scene {
     this.touchJump1;
     this.touchJump2;
     this.fivePoints;
+    this.tenPoings;
   }
 
 
@@ -42,6 +43,7 @@ class SceneGame extends Phaser.Scene {
     this.load.image("witch", "witch.png");
     this.load.image("forest","forestbackground.png")
     this.load.image("coin5p", "coin5p.png");
+    this.load.spritesheet('coin10pS', 'coin10p_sprite.png', { frameWidth: 32, frameHeight: 32 });
     //this.load.image('red', 'red.png');
 
     /*Sprites*/
@@ -79,11 +81,28 @@ class SceneGame extends Phaser.Scene {
       allowGravity: false,
       immovable: true
     });
+    this.tenPoints = this.physics.add.group({
+      allowGravity: false,
+      immovable: true
+    });
     const fivePointsObj = map.getObjectLayer('5p')['objects'];
+    const tenPointsObj = map.getObjectLayer('10p')['objects'];
+    this.anims.create({
+            key: 'coin10p_anim',
+            frames: this.anims.generateFrameNumbers('coin10pS', { start: 0, end: 8 }),
+            frameRate: 5,
+            repeat: -1
+        });
     fivePointsObj.forEach(fiver => {
-      // Add new spikes to our sprite group, change the start y position to meet the platform
       const five = this.fivePoints.create(fiver.x, fiver.y, 'coin5p').setOrigin(0, 0);
     });
+    tenPointsObj.forEach(tenner => {
+      var ten = this.tenPoints.create(tenner.x,tenner.y,'coin10pS');
+      ten.anims.play('coin10p_anim', true);
+    });
+
+     //player = this.physics.add.sprite(100, 450, 'dude');
+    //this.fullText.setScrollFactor(0)
     /*this.player = this.physics.add
     .sprite(spawnPoint.x, spawnPoint.y, "atlas", "misa-front")
     .setSize(30, 40)
@@ -126,7 +145,7 @@ class SceneGame extends Phaser.Scene {
     for (var a = 0;a<this.unicorns.children.entries.length;a++){
       this.unicorns.children.entries[a].setBounce(1)
       this.unicorns.children.entries[a].setCollideWorldBounds(true);
-      this.unicorns.children.entries[a].setVelocity(Phaser.Math.Between(-100, 100), 20);
+      this.unicorns.children.entries[a].setVelocity(Phaser.Math.Between(10, 20), 20);
       this.unicorns.children.entries[a].allowGravity = false;
       this.unicorns.children.entries[a].setScale(0.2)
     }
@@ -153,7 +172,9 @@ class SceneGame extends Phaser.Scene {
     this.witch.allowGravity = false;
     //this.witch.setScale(0.08)
     this.witch.setDisplaySize(44, 64);
-    //this.witch.setSize(200, 200, true);
+    this.witch.body.offset.y = 60;
+    this.witch.body.offset.x = 100;
+    this.witch.setSize(300, 900, false);
 
 
 
@@ -170,7 +191,8 @@ class SceneGame extends Phaser.Scene {
 
     this.physics.add.collider(this.player, worldLayer);
 
-    this.physics.add.overlap(this.player, this.fivePoints, collectCoin5p, null, this);
+    this.physics.add.overlap(this.player, this.fivePoints, collectCoin, null, this);
+    this.physics.add.overlap(this.player, this.tenPoints, collectCoin, null, this);
 
     this.physics.add.overlap(this.player, this.unicorns, catchUnicorn, null, this);
     this.physics.add.overlap(this.badguys, this.unicorns, eatUnicorn, null, this);
@@ -206,52 +228,16 @@ class SceneGame extends Phaser.Scene {
     this.input.addPointer(3);
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    this.touchLeft = this.add.text(15, 450, 'o', { fontSize: '178px', fill: '#fff' });
-    this.touchLeft.setScrollFactor(0)
-    this.touchRight = this.add.text(700, 450, 'o', { fontSize: '178px', fill: '#fff' });
-    this.touchRight.setScrollFactor(0)
-    this.touchJump1 = this.add.text(15, 340, 'o', { fontSize: '178px', fill: '#fff' });
-    this.touchJump1.setScrollFactor(0)
-    this.touchJump2 = this.add.text(700, 340, 'o', { fontSize: '178px', fill: '#fff' });
-    this.touchJump2.setScrollFactor(0)
-
+  if(!this.sys.game.device.os.desktop){
+    addMobileControls(this)
+  }
     /*this.graphics2 = this.add.graphics({ fillStyle: { color: 0xff0000 } });
     var circle = new Phaser.Geom.Circle(36, 540, 50);
     this.graphics2.setScrollFactor(0)
     this.graphics2.fillCircleShape(circle);
     this.add.existing(this.graphics2);*/
-    this.touchLeft.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
-      console.log("hej afhasdf")
-      this.moveLeft = true;
-    },this);
-    this.touchLeft.setInteractive().on('pointerup', function(pointer, localX, localY, event){
-      this.moveLeft = false;
-    },this);
-    this.touchLeft.setInteractive().on('pointerout', function(pointer, localX, localY, event){
-      this.moveLeft = false;
-    },this);
-    this.touchRight.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
-      console.log("hej afhasdf")
-      this.moveRight = true;
-    },this);
-    this.touchRight.setInteractive().on('pointerup', function(pointer, localX, localY, event){
-      this.moveRight = false;
-    },this);
-    this.touchRight.setInteractive().on('pointerout', function(pointer, localX, localY, event){
-      this.moveRight = false;
-    },this);
-    this.touchJump1.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
-      this.touchJump = true;
-    },this);
-    this.touchJump1.setInteractive().on('pointerup', function(pointer, localX, localY, event){
-      this.touchJump = false;
-    },this);
-    this.touchJump2.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
-      this.touchJump = true;
-    },this);
-    this.touchJump2.setInteractive().on('pointerup', function(pointer, localX, localY, event){
-      this.touchJump = false;
-    },this);
+
+
 
     /*this.input.on('pointerdown', function(){
         this.moveLeft = true;
@@ -333,9 +319,16 @@ function catchUnicorn(player, unicorn)
     this.score += 100;
     this.scoreText.setText('Score: ' + this.score);
 }
-function collectCoin5p(player,coin){
+function collectCoin(player,coin){
+  var score;
   coin.disableBody(true,true);
-  this.score += 5;
+  console.log(coin.texture)
+  if(coin.texture.key === "coin5p"){
+    score = 5;
+  }else if(coin.texture.key === "coin10pS"){
+    score = 10;
+  }
+  this.score += score;
   this.scoreText.setText('Score: ' + this.score);
 }
 function gameOver(player, badguy)
